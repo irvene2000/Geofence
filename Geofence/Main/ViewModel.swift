@@ -44,15 +44,33 @@ class ViewModel: NSObject, ViewModelType {
         return newLocationManager
     }()
     
+    private var timer : Timer!
+    
     override init() {
         super.init()
         
         getCurrentWifi()
-        
+        startTimer()
         locationManager.requestWhenInUseAuthorization()
     }
     
-    private func getCurrentWifi() {
+    deinit {
+        stopTimer()
+    }
+    
+    private func startTimer() {
+        stopTimer()
+        timer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(getCurrentWifi), userInfo: nil, repeats: true)
+    }
+    
+    private func stopTimer() {
+        guard timer != nil else { return }
+            
+        timer.invalidate()
+        timer = nil
+    }
+    
+    @objc private func getCurrentWifi() {
         var ssid: String?
         if let interfaces = CNCopySupportedInterfaces() as NSArray? {
             for interface in interfaces {
@@ -62,20 +80,29 @@ class ViewModel: NSObject, ViewModelType {
                 }
             }
         }
-        self.ssid.accept("Test Wifi")
+        
+        let randomNumber = Int.random(in: 1...5)
+        self.ssid.accept("Test Wifi \(randomNumber)")
 //        self.ssid.accept(ssid)
     }
     
     func assessPositionRelativeToGeofence() {
-        guard let userCurrentLocation = userCurrentLocation.value,
-            let geofenceCenter = geofenceCenter.value else {
-                position.accept(.undetermined)
-                return
+        var position: PositionRelativeToGeofence = .undetermined
+        
+        if let geofenceSSID = geofenceSSID.value,
+            let ssid = ssid.value,
+            geofenceSSID.lowercased() == ssid.lowercased() {
+            position = .inside
         }
         
-        let region = CLCircularRegion(center: geofenceCenter, radius: geofenceRadius.value * 1000, identifier: "circle region")
-        position.accept(region.contains(userCurrentLocation) ? .inside : .outside)
+        if position == .undetermined,
+            let userCurrentLocation = userCurrentLocation.value,
+            let geofenceCenter = geofenceCenter.value {
+            let region = CLCircularRegion(center: geofenceCenter, radius: geofenceRadius.value * 1000, identifier: "circle region")
+            position = region.contains(userCurrentLocation) ? .inside : .outside
+        }
         
+        self.position.accept(position)
     }
 }
 

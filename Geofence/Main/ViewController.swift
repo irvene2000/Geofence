@@ -191,7 +191,7 @@ extension ViewController: UITextFieldDelegate {
             viewModel.geofenceRadius.accept(newRadius)
         }
         else if textField == geofenceWifiTextField {
-            viewModel.ssid.accept(textField.text)
+            viewModel.geofenceSSID.accept(textField.text)
         }
     }
 }
