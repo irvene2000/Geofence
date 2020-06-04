@@ -9,3 +9,9 @@
 "viewcontroller.title" = "Geofence";
 "viewcontroller.modifygeofence" = "Modify Geofence";
 "viewcontroller.selectssid" = "Select SSID";
+"viewcontroller.connected" = "Connected: %@";
+"viewcontroller.wifiplaceholder" = "Geofence Wifi SSID";
+"viewcontroller.geofenceradiusplaceholder" = "Enter geofence radius(km)";
+"viewcontroller.inside" = "Inside";
+"viewcontroller.outside" = "Outside";
+"viewcontroller.undetermined" = "Undertermined";

@@ -9,19 +9,27 @@
 import UIKit
 import MapKit
 import RxSwift
+
 class ViewController: UIViewController {
 
     // MARK: - Properties -
     // MARK: Internal
     
+    @IBOutlet weak var stateLabel: UILabel!
     @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var connectedWifiLabel: UILabel!
+    @IBOutlet weak var geofenceWifiTextField: UITextField!
+    @IBOutlet weak var geofenceRadiusTextField: UITextField!
     
     // MARK: Private
     
     private var viewModel: ViewModelType = ViewModel()
     private let kCellIdentifier = "Cell"
     private var disposeBag: DisposeBag!
+    private lazy var tapGestureRecognizer: UITapGestureRecognizer = {
+        let newGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(didTapMap(gestureRecognizer:)))
+        return newGestureRecognizer
+    }()
     
     // MARK: - Initializer and Lifecycle Methods
     
@@ -31,27 +39,33 @@ class ViewController: UIViewController {
         setupViews()
         setupListeners()
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        if let selectedIndexPath = tableView.indexPathForSelectedRow {
-            tableView.deselectRow(at: selectedIndexPath, animated: true)
-        }
-    }
-
+   
     // MARK: - Private API -
     // MARK: Setup Methods
     
     private func setupViews() {
         title = NSLocalizedString("viewcontroller.title", comment: "")
         
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: kCellIdentifier)
-        
         mapView.delegate = self
-        mapView.isUserInteractionEnabled = false
+        mapView.showsUserLocation = true
+        mapView.addGestureRecognizer(tapGestureRecognizer)
+        
+        stateLabel.backgroundColor = UIColor.black.withAlphaComponent(0.2)
+        stateLabel.layer.cornerRadius = 15.0
+        stateLabel.layer.masksToBounds = true
+        
+        geofenceWifiTextField.layer.borderColor = UIColor.lightGray.cgColor
+        geofenceWifiTextField.layer.borderWidth = 2.0
+        let wifiPlaceholder = NSLocalizedString("viewcontroller.wifiplaceholder", comment: "Placeholder text for entering wifi ssid")
+        geofenceWifiTextField.attributedPlaceholder = NSAttributedString(string: wifiPlaceholder, attributes: [.foregroundColor: UIColor.lightGray])
+        geofenceWifiTextField.delegate = self
+        
+        geofenceRadiusTextField.layer.borderColor = UIColor.lightGray.cgColor
+        geofenceRadiusTextField.layer.borderWidth = 2.0
+        let radiusPlaceholder = NSLocalizedString("viewcontroller.geofenceradiusplaceholder", comment: "Placeholder text for entering radius of geofence")
+        geofenceRadiusTextField.keyboardType = .numberPad
+        geofenceRadiusTextField.attributedPlaceholder = NSAttributedString(string: radiusPlaceholder, attributes: [.foregroundColor: UIColor.lightGray])
+        geofenceRadiusTextField.delegate = self
         
         addGeofenceOverlay()
     }
@@ -65,6 +79,8 @@ class ViewController: UIViewController {
                 
                 strongSelf.addGeofenceOverlay()
                 strongSelf.centerMap()
+                
+                strongSelf.viewModel.assessPositionRelativeToGeofence()
             })
             .disposed(by: disposeBag)
         
@@ -74,6 +90,46 @@ class ViewController: UIViewController {
                 
                 strongSelf.addGeofenceOverlay()
                 strongSelf.centerMap()
+                
+                strongSelf.viewModel.assessPositionRelativeToGeofence()
+            })
+            .disposed(by: disposeBag)
+        
+        viewModel.ssid
+            .subscribe(onNext: { [weak self] (value) in
+                guard let strongSelf = self else { return }
+                
+                if let value = value {
+                    strongSelf.connectedWifiLabel.text = String.localizedStringWithFormat(NSLocalizedString("viewcontroller.connected", comment: ""), value)
+                }
+                else {
+                    strongSelf.connectedWifiLabel.text = String.localizedStringWithFormat(NSLocalizedString("viewcontroller.connected", comment: ""), "N/A")
+                }
+                
+                strongSelf.viewModel.assessPositionRelativeToGeofence()
+            })
+        .disposed(by: disposeBag)
+        
+        viewModel.geofenceSSID
+            .subscribe(onNext: { [weak self] (value) in
+                guard let strongSelf = self else { return }
+                
+                strongSelf.viewModel.assessPositionRelativeToGeofence()
+            })
+            .disposed(by: disposeBag)
+        
+        viewModel.position
+            .subscribe(onNext: { [weak self] (value) in
+                guard let strongSelf = self else { return }
+                switch value {
+                case .undetermined:
+                    strongSelf.stateLabel.text = NSLocalizedString("viewcontroller.undetermined", comment: "")
+                case .inside:
+                    strongSelf.stateLabel.text = NSLocalizedString("viewcontroller.inside", comment: "")
+                case .outside:
+                    strongSelf.stateLabel.text = NSLocalizedString("viewcontroller.outside", comment: "")
+                }
+                
             })
             .disposed(by: disposeBag)
     }
@@ -83,45 +139,26 @@ class ViewController: UIViewController {
     private func addGeofenceOverlay() {
         mapView.removeOverlays(mapView.overlays)
         
-        if let center = viewModel.geofenceCenter.value,
-            let radius = viewModel.geofenceRadius.value {
-            mapView.addOverlay(MKPolygon.generateCircle(centeredOn: center, radius: radius))
+        if let center = viewModel.geofenceCenter.value {
+            mapView.addOverlay(MKPolygon.generateCircle(centeredOn: center, radius: viewModel.geofenceRadius.value))
         }
     }
     
     private func centerMap() {
-        guard let center = viewModel.geofenceCenter.value,
-            let radius = viewModel.geofenceRadius.value else { return }
+        guard let center = viewModel.geofenceCenter.value else { return }
         
-        let distance = (radius) / 50
+        let distance = viewModel.geofenceRadius.value / 50
         let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: distance, longitudeDelta: distance))
         mapView.setRegion(region, animated: true)
     }
-}
-
-extension ViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
-    }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: kCellIdentifier, for: indexPath)
+    @objc private func didTapMap(gestureRecognizer: UITapGestureRecognizer) {
+        view.endEditing(true)
         
-        if indexPath.row == 0 {
-            cell.textLabel?.text = NSLocalizedString("viewcontroller.modifygeofence", comment: "Title of cell to modify geofence")
-        }
-        else if indexPath.row == 1 {
-            cell.textLabel?.text = NSLocalizedString("viewcontroller.selectssid", comment: "Title of cell to select a SSID")
-        }
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.row == 0 {
-            performSegue(withIdentifier: "ModifyGeofence", sender: nil)
-        }
-        else if indexPath.row == 1 {
-            performSegue(withIdentifier: "SelectSSID", sender: nil)
+        if gestureRecognizer.state == .ended {
+            let locationInView = gestureRecognizer.location(in: mapView)
+            let tappedCoordinate = mapView.convert(locationInView, toCoordinateFrom: mapView)
+            viewModel.geofenceCenter.accept(tappedCoordinate)
         }
     }
 }
@@ -133,5 +170,28 @@ extension ViewController: MKMapViewDelegate {
         renderer.lineWidth = 5.0
         renderer.fillColor = UIColor.yellow.withAlphaComponent(0.1)
         return renderer
+    }
+}
+
+extension ViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let newString = (textField.text as NSString?)?.replacingCharacters(in: range, with: string)
+        
+        if textField == geofenceRadiusTextField {
+            return newString?.range(of: "^[0-9]{0,3}$", options: .regularExpression) != nil
+        }
+        else {
+            return true
+        }
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if textField == geofenceRadiusTextField {
+            guard let newRadius = Double(textField.text ?? "0") else { return }
+            viewModel.geofenceRadius.accept(newRadius)
+        }
+        else if textField == geofenceWifiTextField {
+            viewModel.ssid.accept(textField.text)
+        }
     }
 }
