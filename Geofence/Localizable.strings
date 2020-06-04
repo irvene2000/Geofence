@@ -1,0 +1,11 @@
+/* 
+  Localizable.strings
+  Geofence
+
+  Created by Tan Way Loon on 04/06/2020.
+  Copyright © 2020 Tan Way Loon. All rights reserved.
+*/
+
+"viewcontroller.title" = "Geofence";
+"viewcontroller.modifygeofence" = "Modify Geofence";
+"viewcontroller.selectssid" = "Select SSID";
