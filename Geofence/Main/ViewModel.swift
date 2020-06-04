@@ -28,9 +28,15 @@ protocol ViewModelType {
     var userCurrentLocation: BehaviorRelay<CLLocationCoordinate2D?> { get }
     
     func assessPositionRelativeToGeofence()
+    func updateGeofenceCenter(_ center: CLLocationCoordinate2D?)
+    func updateGeofenceRadius(_ radius: Double)
+    func updateGeofenceSSID(_ geofenceSSID: String?)
 }
 
 class ViewModel: NSObject, ViewModelType {
+    // MARK: - Properties -
+    // MARK: Internal
+    
     var geofenceCenter: BehaviorRelay<CLLocationCoordinate2D?> = BehaviorRelay(value: nil)
     var geofenceRadius: BehaviorRelay<Double> = BehaviorRelay(value: 10)
     var ssid = BehaviorRelay<String?>(value: nil)
@@ -38,13 +44,16 @@ class ViewModel: NSObject, ViewModelType {
     var position = BehaviorRelay<PositionRelativeToGeofence>(value: .undetermined)
     var userCurrentLocation = BehaviorRelay<CLLocationCoordinate2D?>(value: nil)
     
+    // MARK: Private
+    
     private lazy var locationManager: CLLocationManager = {
         let newLocationManager = CLLocationManager()
         newLocationManager.delegate = self
         return newLocationManager
     }()
-    
     private var timer : Timer!
+    
+    // MARK: - Initializer and Lifecycle Methods -
     
     override init() {
         super.init()
@@ -58,34 +67,8 @@ class ViewModel: NSObject, ViewModelType {
         stopTimer()
     }
     
-    private func startTimer() {
-        stopTimer()
-        timer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(getCurrentWifi), userInfo: nil, repeats: true)
-    }
-    
-    private func stopTimer() {
-        guard timer != nil else { return }
-            
-        timer.invalidate()
-        timer = nil
-    }
-    
-    @objc private func getCurrentWifi() {
-        var ssid: String?
-        if let interfaces = CNCopySupportedInterfaces() as NSArray? {
-            for interface in interfaces {
-                if let interfaceInfo = CNCopyCurrentNetworkInfo(interface as! CFString) as NSDictionary? {
-                    ssid = interfaceInfo[kCNNetworkInfoKeySSID as String] as? String
-                    break
-                }
-            }
-        }
-        
-        // NOTE: Uncomment line 85 and 86 and comment out 87 if you want to test the SSID function with a mock value
-//        let randomNumber = Int.random(in: 1...5)
-//        self.ssid.accept("Test Wifi \(randomNumber)")
-        self.ssid.accept(ssid)
-    }
+    // MARK: - Internal API -
+    // MARK: Input Methods
     
     func assessPositionRelativeToGeofence() {
         var position: PositionRelativeToGeofence = .undetermined
@@ -104,6 +87,52 @@ class ViewModel: NSObject, ViewModelType {
         }
         
         self.position.accept(position)
+    }
+    
+    func updateGeofenceCenter(_ center: CLLocationCoordinate2D?) {
+        geofenceCenter.accept(center)
+    }
+    
+    func updateGeofenceRadius(_ radius: Double) {
+        geofenceRadius.accept(radius)
+    }
+    
+    func updateGeofenceSSID(_ geofenceSSID: String?) {
+        self.geofenceSSID.accept(geofenceSSID)
+    }
+    
+    // MARK: - Private API -
+    // MARK: Timer Methods
+    
+    private func startTimer() {
+        stopTimer()
+        timer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(getCurrentWifi), userInfo: nil, repeats: true)
+    }
+    
+    private func stopTimer() {
+        guard timer != nil else { return }
+            
+        timer.invalidate()
+        timer = nil
+    }
+    
+    // MARK: Callback Methods
+    
+    @objc private func getCurrentWifi() {
+        var ssid: String?
+        if let interfaces = CNCopySupportedInterfaces() as NSArray? {
+            for interface in interfaces {
+                if let interfaceInfo = CNCopyCurrentNetworkInfo(interface as! CFString) as NSDictionary? {
+                    ssid = interfaceInfo[kCNNetworkInfoKeySSID as String] as? String
+                    break
+                }
+            }
+        }
+        
+        // NOTE: Uncomment line 85 and 86 and comment out 87 if you want to test the SSID function with a mock value
+//        let randomNumber = Int.random(in: 1...5)
+//        self.ssid.accept("Test Wifi \(randomNumber)")
+        self.ssid.accept(ssid)
     }
 }
 

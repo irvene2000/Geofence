@@ -190,10 +190,10 @@ extension ViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField == geofenceRadiusTextField {
             guard let newRadius = Double(textField.text ?? "0") else { return }
-            viewModel.geofenceRadius.accept(newRadius)
+            viewModel.updateGeofenceRadius(newRadius)
         }
         else if textField == geofenceWifiTextField {
-            viewModel.geofenceSSID.accept(textField.text)
+            viewModel.updateGeofenceSSID(textField.text)
         }
     }
 }
