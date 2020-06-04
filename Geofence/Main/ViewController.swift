@@ -65,6 +65,7 @@ class ViewController: UIViewController {
         let radiusPlaceholder = NSLocalizedString("viewcontroller.geofenceradiusplaceholder", comment: "Placeholder text for entering radius of geofence")
         geofenceRadiusTextField.keyboardType = .numberPad
         geofenceRadiusTextField.attributedPlaceholder = NSAttributedString(string: radiusPlaceholder, attributes: [.foregroundColor: UIColor.lightGray])
+        geofenceRadiusTextField.clearsOnBeginEditing = true
         geofenceRadiusTextField.delegate = self
         
         addGeofenceOverlay()
@@ -89,6 +90,7 @@ class ViewController: UIViewController {
                 guard let strongSelf = self else { return }
                 
                 strongSelf.addGeofenceOverlay()
+                strongSelf.geofenceRadiusTextField.text = "\(Int(value))"
                 strongSelf.centerMap()
                 
                 strongSelf.viewModel.assessPositionRelativeToGeofence()
