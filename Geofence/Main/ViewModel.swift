@@ -7,11 +7,16 @@
 //
 
 import Foundation
+import MapKit
+import RxSwift
+import RxCocoa
 
 protocol ViewModelType {
-    
+    var geofenceCenter: BehaviorRelay<CLLocationCoordinate2D?> { get }
+    var geofenceRadius: BehaviorRelay<Double?> { get }
 }
 
 class ViewModel: ViewModelType {
-    
+    var geofenceCenter: BehaviorRelay<CLLocationCoordinate2D?> = BehaviorRelay(value: nil)
+    var geofenceRadius: BehaviorRelay<Double?> = BehaviorRelay(value: nil)
 }

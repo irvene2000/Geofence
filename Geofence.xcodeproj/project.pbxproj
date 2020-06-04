@@ -15,6 +15,7 @@
 		011EEFA42488BF6C00B64B91 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 011EEFA22488BF6C00B64B91 /* LaunchScreen.storyboard */; };
 		01635E072488C4D900E460FE /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01635E062488C4D900E460FE /* ViewModel.swift */; };
 		0166DE342488C67D00C269CE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0166DE332488C67D00C269CE /* Localizable.strings */; };
+		0166DE402488D24700C269CE /* MKPolygon+Circle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0166DE3F2488D24700C269CE /* MKPolygon+Circle.swift */; };
 		E61D7739C1AC8DE6617A3209 /* Pods_Geofence.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B37125ED11127FD2804D69C5 /* Pods_Geofence.framework */; };
 /* End PBXBuildFile section */
 
@@ -29,6 +30,7 @@
 		011EEFA52488BF6C00B64B91 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		01635E062488C4D900E460FE /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		0166DE332488C67D00C269CE /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		0166DE3F2488D24700C269CE /* MKPolygon+Circle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MKPolygon+Circle.swift"; sourceTree = "<group>"; };
 		8B4F9515E214932165542C8E /* Pods-Geofence.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Geofence.debug.xcconfig"; path = "Target Support Files/Pods-Geofence/Pods-Geofence.debug.xcconfig"; sourceTree = "<group>"; };
 		B37125ED11127FD2804D69C5 /* Pods_Geofence.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Geofence.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C14876B6BEF20D55B145C590 /* Pods-Geofence.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Geofence.release.xcconfig"; path = "Target Support Files/Pods-Geofence/Pods-Geofence.release.xcconfig"; sourceTree = "<group>"; };
@@ -67,6 +69,7 @@
 		011EEF962488BF6A00B64B91 /* Geofence */ = {
 			isa = PBXGroup;
 			children = (
+				0166DE3A2488CCCB00C269CE /* Polygon */,
 				01635E052488C4CB00E460FE /* Main */,
 				011EEF972488BF6A00B64B91 /* AppDelegate.swift */,
 				011EEF992488BF6A00B64B91 /* SceneDelegate.swift */,
@@ -86,6 +89,14 @@
 				01635E062488C4D900E460FE /* ViewModel.swift */,
 			);
 			path = Main;
+			sourceTree = "<group>";
+		};
+		0166DE3A2488CCCB00C269CE /* Polygon */ = {
+			isa = PBXGroup;
+			children = (
+				0166DE3F2488D24700C269CE /* MKPolygon+Circle.swift */,
+			);
+			path = Polygon;
 			sourceTree = "<group>";
 		};
 		131D266B8C2F6B5B319D86D5 /* Frameworks */ = {
@@ -224,6 +235,7 @@
 				011EEF9C2488BF6A00B64B91 /* ViewController.swift in Sources */,
 				011EEF982488BF6A00B64B91 /* AppDelegate.swift in Sources */,
 				01635E072488C4D900E460FE /* ViewModel.swift in Sources */,
+				0166DE402488D24700C269CE /* MKPolygon+Circle.swift in Sources */,
 				011EEF9A2488BF6A00B64B91 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

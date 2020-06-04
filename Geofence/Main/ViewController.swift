@@ -8,7 +8,7 @@
 
 import UIKit
 import MapKit
-
+import RxSwift
 class ViewController: UIViewController {
 
     // MARK: - Properties -
@@ -21,6 +21,7 @@ class ViewController: UIViewController {
     
     private var viewModel: ViewModelType = ViewModel()
     private let kCellIdentifier = "Cell"
+    private var disposeBag: DisposeBag!
     
     // MARK: - Initializer and Lifecycle Methods
     
@@ -39,6 +40,9 @@ class ViewController: UIViewController {
         }
     }
 
+    // MARK: - Private API -
+    // MARK: Setup Methods
+    
     private func setupViews() {
         title = NSLocalizedString("viewcontroller.title", comment: "")
         
@@ -47,10 +51,51 @@ class ViewController: UIViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: kCellIdentifier)
         
         mapView.delegate = self
+        mapView.isUserInteractionEnabled = false
+        
+        addGeofenceOverlay()
     }
     
     private func setupListeners() {
+        disposeBag = DisposeBag()
         
+        viewModel.geofenceCenter
+            .subscribe(onNext: { [weak self] (value) in
+                guard let strongSelf = self else { return }
+                
+                strongSelf.addGeofenceOverlay()
+                strongSelf.centerMap()
+            })
+            .disposed(by: disposeBag)
+        
+        viewModel.geofenceRadius
+            .subscribe(onNext: { [weak self] (value) in
+                guard let strongSelf = self else { return }
+                
+                strongSelf.addGeofenceOverlay()
+                strongSelf.centerMap()
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    // MARK: Convenience Methods
+    
+    private func addGeofenceOverlay() {
+        mapView.removeOverlays(mapView.overlays)
+        
+        if let center = viewModel.geofenceCenter.value,
+            let radius = viewModel.geofenceRadius.value {
+            mapView.addOverlay(MKPolygon.generateCircle(centeredOn: center, radius: radius))
+        }
+    }
+    
+    private func centerMap() {
+        guard let center = viewModel.geofenceCenter.value,
+            let radius = viewModel.geofenceRadius.value else { return }
+        
+        let distance = (radius) / 50
+        let region = MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: distance, longitudeDelta: distance))
+        mapView.setRegion(region, animated: true)
     }
 }
 
@@ -82,5 +127,11 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
 }
 
 extension ViewController: MKMapViewDelegate {
-   
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        let renderer = MKPolygonRenderer(overlay: overlay)
+        renderer.strokeColor = UIColor.yellow
+        renderer.lineWidth = 5.0
+        renderer.fillColor = UIColor.yellow.withAlphaComponent(0.1)
+        return renderer
+    }
 }
