@@ -4,7 +4,7 @@ This project demonstrates the use of Core Location and MapKit to determine if a 
 
 ## Getting Started
 
-After cloning the project. You should be able to run on any device.
+After cloning the project. Open the Geofence.xcworkspace file and you should be able to build and run. Tested on Xcode 11.
 
 ### Prerequisites
 
