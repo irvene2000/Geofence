@@ -4,7 +4,7 @@ This project demonstrates the use of Core Location and MapKit to determine if a 
 
 ## Getting Started
 
-After cloning the project. Open the Geofence.xcworkspace file and you should be able to build and run. Tested on Xcode 11.
+After cloning the project. Open the Geofence.xcworkspace file and you should be able to build and run. Tested on Xcode 11. Use Command+R to build to the selected simulator or device while Command+U will execute the test suite which currently only contains unit tests for ViewModel.swift
 
 ### Prerequisites
 
