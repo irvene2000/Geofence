@@ -81,9 +81,10 @@ class ViewModel: NSObject, ViewModelType {
             }
         }
         
-        let randomNumber = Int.random(in: 1...5)
-        self.ssid.accept("Test Wifi \(randomNumber)")
-//        self.ssid.accept(ssid)
+        // NOTE: Uncomment line 85 and 86 and comment out 87 if you want to test the SSID function with a mock value
+//        let randomNumber = Int.random(in: 1...5)
+//        self.ssid.accept("Test Wifi \(randomNumber)")
+        self.ssid.accept(ssid)
     }
     
     func assessPositionRelativeToGeofence() {
