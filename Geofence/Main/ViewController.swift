@@ -134,6 +134,30 @@ class ViewController: UIViewController {
                 
             })
             .disposed(by: disposeBag)
+        
+        viewModel.notifyLocationPermissionDenied
+            .subscribe(onNext: { [weak self] (_) in
+                guard let strongSelf = self else { return }
+                
+                let alertController = UIAlertController(title: NSLocalizedString("viewcontroller.locationdenied", comment: "Title of alert to inform users that they have denied location permission"),
+                                                        message: NSLocalizedString("viewcontroller.locationinstructions", comment: "Instructions to inform user to turn it on"),
+                                                        preferredStyle: .alert)
+                alertController.addAction(UIAlertAction(title: NSLocalizedString("viewcontroller.settings", comment: "Button to navigate user to the setting app"), style: .default, handler: { (_) in
+                    guard let appSettings = URL(string: UIApplication.openSettingsURLString) else {
+                        let alertController = UIAlertController(title: nil,
+                                                                message: NSLocalizedString("viewcontroller.launchsettingserror",
+                                                                                           comment: "Error to let user know that an error has occurred while attempting to launch settings"),
+                                                                preferredStyle: .alert)
+                        strongSelf.present(alertController, animated: true, completion: nil)
+                        
+                        return
+                    }
+                    
+                    UIApplication.shared.open(appSettings)
+                }))
+                strongSelf.present(alertController, animated: true, completion: nil)
+            })
+            .disposed(by: disposeBag)
     }
     
     // MARK: Convenience Methods

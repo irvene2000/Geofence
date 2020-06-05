@@ -26,6 +26,7 @@ protocol ViewModelType {
     var geofenceSSID: BehaviorRelay<String?> { get }
     var position: BehaviorRelay<PositionRelativeToGeofence> { get }
     var userCurrentLocation: BehaviorRelay<CLLocationCoordinate2D?> { get }
+    var notifyLocationPermissionDenied: PublishRelay<Void> { get }
     
     func assessPositionRelativeToGeofence()
     func updateGeofenceCenter(_ center: CLLocationCoordinate2D?)
@@ -43,6 +44,7 @@ class ViewModel: NSObject, ViewModelType {
     var geofenceSSID = BehaviorRelay<String?>(value: nil)
     var position = BehaviorRelay<PositionRelativeToGeofence>(value: .undetermined)
     var userCurrentLocation = BehaviorRelay<CLLocationCoordinate2D?>(value: nil)
+    var notifyLocationPermissionDenied = PublishRelay<Void>()
     
     // MARK: Private
     
@@ -60,11 +62,15 @@ class ViewModel: NSObject, ViewModelType {
         
         getCurrentWifi()
         startTimer()
-        locationManager.requestWhenInUseAuthorization()
+        requestLocationAuthorization()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(requestLocationAuthorization), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
     deinit {
         stopTimer()
+        
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Internal API -
@@ -134,13 +140,24 @@ class ViewModel: NSObject, ViewModelType {
 //        self.ssid.accept("Test Wifi \(randomNumber)")
         self.ssid.accept(ssid)
     }
+    
+    @objc private func requestLocationAuthorization() {
+        let status = CLLocationManager.authorizationStatus()
+        if status == .notDetermined {
+            locationManager.requestWhenInUseAuthorization()
+        }
+        else if status == .denied {
+            notifyLocationPermissionDenied.accept(())
+        }
+        else {
+            locationManager.startUpdatingLocation()
+        }
+    }
 }
 
 extension ViewModel: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        if status == .authorizedWhenInUse {
-            manager.startUpdatingLocation()
-        }
+        requestLocationAuthorization()
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

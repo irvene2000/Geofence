@@ -15,3 +15,7 @@
 "viewcontroller.inside" = "Inside";
 "viewcontroller.outside" = "Outside";
 "viewcontroller.undetermined" = "Undertermined";
+"viewcontroller.locationdenied" = "Location Permission Denied";
+"viewcontroller.locationinstructions" = "Turn on the location services to allow the app to figure out where you are relative to the geofence.";
+"viewcontroller.settings" = "Go to Settings";
+"viewcontroller.launchsettingserror" = "There was an error when trying to launch app settings. Please try again later.";
