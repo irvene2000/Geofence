@@ -4,7 +4,15 @@ This project demonstrates the use of Core Location and MapKit to determine if a 
 
 ## Getting Started
 
-After cloning the project. Open the Geofence.xcworkspace file and you should be able to build and run. Tested on Xcode 11. Use Command+R to build to the selected simulator or device while Command+U will execute the test suite which currently only contains unit tests for ViewModel.swift
+After cloning the project. Open the Geofence.xcworkspace file and you should be able to build and run. Tested on Xcode 11. Use Command+R to build to the selected simulator or device while Command+U will execute the test suite which currently only contains unit tests for ViewModel.swift.
+
+In the unlikely event that the app fails to run. Go to terminal and navigate to the root project directory and run 
+```
+pod install
+```
+before trying again.
+
+The way you establish a geofence is by clicking on a location on the map with a single tap. This will draw a circle geofence around the point that you have clicked on. The radius of the circle can be adjusted by keying it in the second textfield from the top. The app will also detect your currently connected SSID if you are running on a physical iOS 11 device. Assuming the keyed in SSID matches the connected SSID, the label at the bottom will also indicate that user is within the geofence. Disclaimer: Using the SSID is not the most reliable because a different network could have the same name. However, in an effort to ease testing, I've opted to use that instead of using the wifi BSSID.
 
 ### Prerequisites
 
